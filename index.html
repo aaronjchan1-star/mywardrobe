@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>✨ My Wardrobe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Lato', sans-serif; background: #faf7f4; color: #3d2c2c; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #f5ede8; }
+    ::-webkit-scrollbar-thumb { background: #d4a5a5; border-radius: 2px; }
+    .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 12px rgba(139,94,94,0.08); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: 1px solid #f0e6e6; }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(139,94,94,0.14); }
+    .pill { display: inline-block; background: #fdf0ee; border: 1px solid #f0d4d0; border-radius: 20px; padding: 2px 10px; font-size: 11px; letter-spacing: 0.05em; color: #9e6b6b; }
+    .btn-primary { background: #c47b7b; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+    .btn-primary:hover { background: #b06868; }
+    .btn-ghost { background: transparent; border: 1px solid #e0cece; border-radius: 8px; padding: 8px 16px; font-family: 'Lato', sans-serif; font-size: 12px; cursor: pointer; color: #9e6b6b; transition: all 0.2s; }
+    .btn-ghost:hover { background: #fdf0ee; border-color: #c47b7b; }
+    .filter-btn { background: white; border: 1px solid #e8d8d8; border-radius: 20px; padding: 5px 14px; font-size: 12px; cursor: pointer; color: #9e6b6b; transition: all 0.2s; white-space: nowrap; font-family: 'Lato', sans-serif; }
+    .filter-btn.active { background: #c47b7b; border-color: #c47b7b; color: white; }
+    .filter-btn:hover:not(.active) { border-color: #c47b7b; color: #c47b7b; }
+    select, input[type=text], textarea { font-family: 'Lato', sans-serif; border: 1px solid #e8d8d8; border-radius: 8px; padding: 8px 12px; font-size: 13px; background: white; color: #3d2c2c; outline: none; transition: border-color 0.2s; }
+    select:focus, input:focus, textarea:focus { border-color: #c47b7b; box-shadow: 0 0 0 3px rgba(196,123,123,0.1); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(61,44,44,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; backdrop-filter: blur(4px); }
+    .modal { background: white; border-radius: 16px; padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(61,44,44,0.2); }
+    .stat-card { background: white; border-radius: 12px; padding: 14px 18px; border: 1px solid #f0e6e6; text-align: center; flex-shrink: 0; min-width: 90px; }
+    .list-row { background: white; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border: 1px solid #f0e6e6; margin-bottom: 6px; transition: box-shadow 0.2s; cursor: pointer; }
+    .list-row:hover { box-shadow: 0 4px 16px rgba(139,94,94,0.1); }
+    .colour-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.6); box-shadow: 0 1px 4px rgba(0,0,0,0.2); flex-shrink: 0; }
+    .filters-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+    .filters-row::-webkit-scrollbar { display: none; }
+    .stats-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 24px; scrollbar-width: none; }
+    .stats-row::-webkit-scrollbar { display: none; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+    .header { background: white; border-bottom: 1px solid #f0e6e6; padding: 0 24px; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 16px rgba(139,94,94,0.06); }
+    .header-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .content { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+    .label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #b08080; margin-bottom: 4px; }
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .delete-btn { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.4; transition: opacity 0.2s; }
+    .delete-btn:hover { opacity: 1; }
+    .view-toggle { display: flex; background: white; border: 1px solid #e8d8d8; border-radius: 8px; overflow: hidden; }
+    .view-btn { padding: 8px 12px; border: none; cursor: pointer; font-size: 16px; transition: background 0.2s; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo } = React;
+
+const TYPES = ["Tops","Bottoms","Dresses","Outerwear","Shoes","Bags","Accessories","Activewear","Sleepwear","Swimwear"];
+const COLOURS = ["Black","White","Grey","Beige","Brown","Red","Pink","Orange","Yellow","Green","Blue","Purple","Navy","Gold","Silver","Multi"];
+const SEASONS = ["All Seasons","Spring","Summer","Autumn","Winter"];
+const OCCASIONS = ["Casual","Work","Formal","Sport","Evening","Beach","Loungewear"];
+const SIZES = ["XXS","XS","S","M","L","XL","XXL","6","8","10","12","14","16","18","One Size"];
+const COLOUR_HEX = {
+  Black:"#1a1a1a",White:"#f8f8f8",Grey:"#9ca3af",Beige:"#d4b896",Brown:"#92400e",
+  Red:"#dc2626",Pink:"#f472b6",Orange:"#f97316",Yellow:"#fbbf24",Green:"#16a34a",
+  Blue:"#3b82f6",Purple:"#9333ea",Navy:"#1e3a5f",Gold:"#d97706",Silver:"#94a3b8",
+  Multi:"linear-gradient(135deg,#f472b6,#60a5fa,#34d399)"
+};
+const TYPE_ICONS = {Tops:"👚",Bottoms:"👖",Dresses:"👗",Outerwear:"🧥",Shoes:"👠",Bags:"👜",Accessories:"💍",Activewear:"🏃‍♀️",Sleepwear:"🌙",Swimwear:"👙"};
+const emptyItem = {name:"",type:"Tops",colour:"Black",season:"All Seasons",occasion:"Casual",size:"S",brand:"",notes:""};
+
+function App() {
+  const [items, setItems] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [form, setForm] = useState(emptyItem);
+  const [filterType, setFilterType] = useState("All");
+  const [filterColour, setFilterColour] = useState("All");
+  const [filterSeason, setFilterSeason] = useState("All");
+  const [filterOccasion, setFilterOccasion] = useState("All");
+  const [sortBy, setSortBy] = useState("newest");
+  const [search, setSearch] = useState("");
+  const [view, setView] = useState("grid");
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("wardrobe-items");
+      if (saved) setItems(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  const save = (newItems) => {
+    setItems(newItems);
+    try { localStorage.setItem("wardrobe-items", JSON.stringify(newItems)); } catch {}
+  };
+
+  const handleSubmit = () => {
+    if (!form.name.trim()) return;
+    if (editingId !== null) {
+      save(items.map(i => i.id === editingId ? {...form, id: editingId} : i));
+    } else {
+      save([...items, {...form, id: Date.now()}]);
+    }
+    setShowForm(false); setEditingId(null); setForm(emptyItem);
+  };
+
+  const handleEdit = (item) => { setForm(item); setEditingId(item.id); setShowForm(true); };
+  const handleDelete = (id) => { save(items.filter(i => i.id !== id)); setDeleteConfirm(null); };
+
+  const filtered = useMemo(() => {
+    let list = [...items];
+    if (filterType !== "All") list = list.filter(i => i.type === filterType);
+    if (filterColour !== "All") list = list.filter(i => i.colour === filterColour);
+    if (filterSeason !== "All") list = list.filter(i => i.season === filterSeason);
+    if (filterOccasion !== "All") list = list.filter(i => i.occasion === filterOccasion);
+    if (search) list = list.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) || (i.brand||"").toLowerCase().includes(search.toLowerCase()) || (i.notes||"").toLowerCase().includes(search.toLowerCase()));
+    if (sortBy === "newest") list.sort((a,b) => b.id - a.id);
+    if (sortBy === "oldest") list.sort((a,b) => a.id - b.id);
+    if (sortBy === "name") list.sort((a,b) => a.name.localeCompare(b.name));
+    if (sortBy === "type") list.sort((a,b) => a.type.localeCompare(b.type));
+    if (sortBy === "colour") list.sort((a,b) => a.colour.localeCompare(b.colour));
+    return list;
+  }, [items, filterType, filterColour, filterSeason, filterOccasion, search, sortBy]);
+
+  const statsByType = TYPES.map(t => ({t, count: items.filter(i => i.type === t).length})).filter(x => x.count > 0);
+
+  const colourStyle = (c) => {
+    const hex = COLOUR_HEX[c];
+    if (!hex) return {background:"#ccc"};
+    if (hex.includes("gradient")) return {backgroundImage: hex};
+    return {background: hex};
+  };
+
+  return (
+    <>
+      <div className="header">
+        <div className="header-inner">
+          <div>
+            <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:600,color:"#3d2c2c",letterSpacing:"0.02em"}}>✨ My Wardrobe</h1>
+            <p style={{fontSize:11,color:"#b08080",letterSpacing:"0.1em",textTransform:"uppercase",fontWeight:700}}>{items.length} piece{items.length !== 1 ? "s" : ""}</p>
+          </div>
+          <button className="btn-primary" onClick={() => {setForm(emptyItem);setEditingId(null);setShowForm(true);}}>+ Add Item</button>
+        </div>
+      </div>
+
+      <div className="content">
+        {statsByType.length > 0 && (
+          <div className="stats-row">
+            {statsByType.map(({t,count}) => (
+              <div key={t} className="stat-card">
+                <div style={{fontSize:20,marginBottom:2}}>{TYPE_ICONS[t]}</div>
+                <div style={{fontWeight:700,fontSize:18,color:"#c47b7b"}}>{count}</div>
+                <div style={{fontSize:10,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{t}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+          <input type="text" placeholder="🔍 Search by name, brand, notes…" value={search} onChange={e=>setSearch(e.target.value)} style={{flex:1,minWidth:200}} />
+          <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{minWidth:130}}>
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="name">Name A–Z</option>
+            <option value="type">Type</option>
+            <option value="colour">Colour</option>
+          </select>
+          <div className="view-toggle">
+            {["grid","list"].map(v => (
+              <button key={v} className="view-btn" onClick={()=>setView(v)} style={{background:view===v?"#fdf0ee":"transparent",color:view===v?"#c47b7b":"#b08080"}}>{v==="grid"?"⊞":"☰"}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{marginBottom:20}}>
+          <div className="filters-row" style={{marginBottom:8}}>
+            <span style={{fontSize:11,color:"#b08080",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",alignSelf:"center",marginRight:4,flexShrink:0}}>Type</span>
+            {["All",...TYPES].map(t => (
+              <button key={t} className={`filter-btn ${filterType===t?"active":""}`} onClick={()=>setFilterType(t)}>
+                {t!=="All"?TYPE_ICONS[t]+" ":""}{t}
+              </button>
+            ))}
+          </div>
+          <div className="filters-row" style={{marginBottom:8}}>
+            <span style={{fontSize:11,color:"#b08080",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",alignSelf:"center",marginRight:4,flexShrink:0}}>Colour</span>
+            {["All",...COLOURS].map(c => (
+              <button key={c} className={`filter-btn ${filterColour===c?"active":""}`} onClick={()=>setFilterColour(c)} style={{display:"flex",alignItems:"center",gap:5}}>
+                {c!=="All" && <span className="colour-dot" style={{...colourStyle(c),width:10,height:10,display:"inline-block",border:"1px solid rgba(0,0,0,0.1)"}} />}
+                {c}
+              </button>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            <span style={{fontSize:11,color:"#b08080",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",alignSelf:"center",marginRight:4}}>Season</span>
+            {["All",...SEASONS].map(s=>(
+              <button key={s} className={`filter-btn ${filterSeason===s?"active":""}`} onClick={()=>setFilterSeason(s)}>{s}</button>
+            ))}
+            <span style={{fontSize:11,color:"#b08080",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",alignSelf:"center",margin:"0 4px 0 12px"}}>Occasion</span>
+            {["All",...OCCASIONS].map(o=>(
+              <button key={o} className={`filter-btn ${filterOccasion===o?"active":""}`} onClick={()=>setFilterOccasion(o)}>{o}</button>
+            ))}
+          </div>
+        </div>
+
+        <p style={{fontSize:12,color:"#b08080",marginBottom:14,letterSpacing:"0.05em"}}>Showing {filtered.length} of {items.length} items</p>
+
+        {items.length === 0 && (
+          <div className="empty-state">
+            <div style={{fontSize:60,marginBottom:16}}>👗</div>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",color:"#9e6b6b",fontWeight:400,margin:"0 0 8px"}}>Your wardrobe awaits</h2>
+            <p style={{color:"#b08080",margin:"0 0 24px"}}>Start adding your clothes to build your digital closet</p>
+            <button className="btn-primary" onClick={()=>{setForm(emptyItem);setEditingId(null);setShowForm(true);}}>Add Your First Item</button>
+          </div>
+        )}
+
+        {filtered.length === 0 && items.length > 0 && (
+          <div style={{textAlign:"center",padding:"40px 20px",color:"#b08080"}}>
+            <div style={{fontSize:40,marginBottom:12}}>🔍</div>
+            <p>No items match your filters.</p>
+          </div>
+        )}
+
+        {view === "grid" ? (
+          <div className="grid">
+            {filtered.map(item => (
+              <div key={item.id} className="card" onClick={()=>handleEdit(item)}>
+                <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
+                  <div style={{fontSize:28}}>{TYPE_ICONS[item.type]||"👚"}</div>
+                  <div className="colour-dot" style={colourStyle(item.colour)} />
+                </div>
+                <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:"1rem",margin:"0 0 4px",color:"#3d2c2c",lineHeight:1.3}}>{item.name}</h3>
+                {item.brand && <p style={{margin:"0 0 8px",fontSize:11,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.brand}</p>}
+                <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6}}>
+                  <span className="pill">{item.type}</span>
+                  <span className="pill">{item.colour}</span>
+                </div>
+                <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                  {item.size && <span className="pill">Size {item.size}</span>}
+                  {item.season !== "All Seasons" && <span className="pill">{item.season}</span>}
+                  {item.occasion && <span className="pill">{item.occasion}</span>}
+                </div>
+                {item.notes && <p style={{margin:"8px 0 0",fontSize:11,color:"#b08080",fontStyle:"italic",lineHeight:1.4}}>{item.notes}</p>}
+                <div style={{display:"flex",justifyContent:"flex-end",marginTop:10}}>
+                  <button className="delete-btn" onClick={e=>{e.stopPropagation();setDeleteConfirm(item.id);}}>🗑</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div>
+            {filtered.map(item => (
+              <div key={item.id} className="list-row" onClick={()=>handleEdit(item)}>
+                <div style={{fontSize:22,flexShrink:0}}>{TYPE_ICONS[item.type]}</div>
+                <div className="colour-dot" style={colourStyle(item.colour)} />
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}>
+                    <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:"1rem"}}>{item.name}</span>
+                    {item.brand && <span style={{fontSize:11,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.brand}</span>}
+                  </div>
+                  <div style={{display:"flex",gap:4,marginTop:3,flexWrap:"wrap"}}>
+                    <span className="pill">{item.type}</span>
+                    <span className="pill">{item.colour}</span>
+                    {item.size && <span className="pill">Size {item.size}</span>}
+                    {item.season !== "All Seasons" && <span className="pill">{item.season}</span>}
+                    {item.occasion && <span className="pill">{item.occasion}</span>}
+                  </div>
+                </div>
+                {item.notes && <p style={{margin:0,fontSize:11,color:"#b08080",fontStyle:"italic",maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.notes}</p>}
+                <button className="delete-btn" style={{fontSize:16,flexShrink:0}} onClick={e=>{e.stopPropagation();setDeleteConfirm(item.id);}}>🗑</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {showForm && (
+        <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setShowForm(false)}>
+          <div className="modal">
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:600,margin:"0 0 20px",color:"#3d2c2c"}}>{editingId?"Edit Item":"Add New Item"}</h2>
+            <div style={{display:"grid",gap:12}}>
+              <div>
+                <label className="label">Item Name *</label>
+                <input type="text" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="e.g. Floral Summer Dress" style={{width:"100%"}} />
+              </div>
+              <div className="form-grid">
+                <div><label className="label">Type</label>
+                  <select value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))} style={{width:"100%"}}>
+                    {TYPES.map(t=><option key={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div><label className="label">Colour</label>
+                  <select value={form.colour} onChange={e=>setForm(f=>({...f,colour:e.target.value}))} style={{width:"100%"}}>
+                    {COLOURS.map(c=><option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div><label className="label">Size</label>
+                  <select value={form.size} onChange={e=>setForm(f=>({...f,size:e.target.value}))} style={{width:"100%"}}>
+                    {SIZES.map(s=><option key={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div><label className="label">Season</label>
+                  <select value={form.season} onChange={e=>setForm(f=>({...f,season:e.target.value}))} style={{width:"100%"}}>
+                    {SEASONS.map(s=><option key={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div><label className="label">Occasion</label>
+                  <select value={form.occasion} onChange={e=>setForm(f=>({...f,occasion:e.target.value}))} style={{width:"100%"}}>
+                    {OCCASIONS.map(o=><option key={o}>{o}</option>)}
+                  </select>
+                </div>
+                <div><label className="label">Brand</label>
+                  <input type="text" value={form.brand} onChange={e=>setForm(f=>({...f,brand:e.target.value}))} placeholder="e.g. Zara" style={{width:"100%"}} />
+                </div>
+              </div>
+              <div><label className="label">Notes</label>
+                <textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Dry clean only, favourite summer piece…" rows={2} style={{width:"100%",resize:"vertical"}} />
+              </div>
+            </div>
+            <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}>
+              <button className="btn-ghost" onClick={()=>{setShowForm(false);setEditingId(null);}}>Cancel</button>
+              <button className="btn-primary" onClick={handleSubmit} disabled={!form.name.trim()}>{editingId?"Save Changes":"Add to Wardrobe"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setDeleteConfirm(null)}>
+          <div className="modal" style={{maxWidth:360,textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:12}}>🗑️</div>
+            <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.3rem",margin:"0 0 8px"}}>Remove this item?</h3>
+            <p style={{color:"#b08080",fontSize:13,margin:"0 0 20px"}}>This can't be undone.</p>
+            <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+              <button className="btn-ghost" onClick={()=>setDeleteConfirm(null)}>Cancel</button>
+              <button style={{background:"#e07070",color:"white",border:"none",borderRadius:8,padding:"10px 20px",cursor:"pointer",fontFamily:"'Lato',sans-serif",fontWeight:700,fontSize:13,letterSpacing:"0.1em",textTransform:"uppercase"}} onClick={()=>handleDelete(deleteConfirm)}>Remove</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
