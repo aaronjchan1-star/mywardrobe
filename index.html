@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,10 +26,11 @@
     .btn-ghost { background: transparent; border: 1px solid #e0cece; border-radius: 8px; padding: 8px 16px; font-family: 'Lato', sans-serif; font-size: 12px; cursor: pointer; color: #9e6b6b; transition: all 0.2s; }
     .btn-ghost:hover { background: #fdf0ee; border-color: #c47b7b; }
     .btn-danger { background: #e07070; color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-family: 'Lato', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .btn-link { background: none; border: none; color: #c47b7b; cursor: pointer; font-family: 'Lato', sans-serif; font-size: 13px; text-decoration: underline; }
     .filter-btn { background: white; border: 1px solid #e8d8d8; border-radius: 20px; padding: 5px 14px; font-size: 12px; cursor: pointer; color: #9e6b6b; transition: all 0.2s; white-space: nowrap; font-family: 'Lato', sans-serif; }
     .filter-btn.active { background: #c47b7b; border-color: #c47b7b; color: white; }
     .filter-btn:hover:not(.active) { border-color: #c47b7b; color: #c47b7b; }
-    select, input[type=text], input[type=number], input[type=password], textarea { font-family: 'Lato', sans-serif; border: 1px solid #e8d8d8; border-radius: 8px; padding: 8px 12px; font-size: 13px; background: white; color: #3d2c2c; outline: none; transition: border-color 0.2s; }
+    select, input[type=text], input[type=email], input[type=number], input[type=password], textarea { font-family: 'Lato', sans-serif; border: 1px solid #e8d8d8; border-radius: 8px; padding: 10px 12px; font-size: 13px; background: white; color: #3d2c2c; outline: none; transition: border-color 0.2s; }
     select:focus, input:focus, textarea:focus { border-color: #c47b7b; box-shadow: 0 0 0 3px rgba(196,123,123,0.1); }
     .modal-overlay { position: fixed; inset: 0; background: rgba(61,44,44,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; backdrop-filter: blur(4px); }
     .modal { background: white; border-radius: 16px; padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(61,44,44,0.2); }
@@ -56,12 +58,28 @@
     .profile-btn:hover { background: #f9e3df; }
     .price { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: #8a6a3e; font-weight: 600; font-style: italic; }
     .pin-input { width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: 700; }
+    .auth-bg { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #faf7f4 0%, #fdf0ee 100%); }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid #f0d4d0; border-top-color: #c47b7b; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .err-msg { background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px 12px; border-radius: 6px; font-size: 12px; }
+    .info-msg { background: #fdf0ee; border: 1px solid #f0d4d0; color: #9e6b6b; padding: 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; }
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useMemo } = React;
+// ===========================================================
+// SUPABASE CONFIGURATION — paste your project values here
+// Get them from: Supabase Dashboard → Project Settings → API
+// ===========================================================
+const SUPABASE_URL = "https://jatugyrqttidwnhnrvqn.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphdHVneXJxdHRpZHduaG5ydnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzMTkwMzgsImV4cCI6MjA5Mzg5NTAzOH0.6c8YIiBZeWDA_g15VdTJfFNyyArvGLYytii3SGo7_IA";
+// ===========================================================
+
+const { useState, useEffect, useMemo, useCallback } = React;
+const sb = (SUPABASE_URL && SUPABASE_URL !== "PASTE_YOUR_PROJECT_URL_HERE")
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
 
 const TYPES = ["Tops","Bottoms","Dresses","Outerwear","Shoes","Bags","Accessories","Activewear","Sleepwear","Swimwear"];
 const COLOURS = ["Black","White","Grey","Beige","Brown","Red","Pink","Orange","Yellow","Green","Blue","Purple","Navy","Gold","Silver","Multi"];
@@ -73,10 +91,96 @@ const TYPE_ICONS = {Tops:"👚",Bottoms:"👖",Dresses:"👗",Outerwear:"🧥",S
 const emptyItem = {name:"",type:"Tops",colour:"Black",season:"All Seasons",occasion:"Casual",size:"S",brand:"",notes:"",price:""};
 const CURRENCY = "$";
 const hashPin = (pin) => btoa(unescape(encodeURIComponent("wardrobe:" + pin))).split("").reverse().join("");
+const colourStyle = (c) => { const hex = COLOUR_HEX[c]; if (!hex) return {background:"#ccc"}; if (hex.includes("gradient")) return {backgroundImage: hex}; return {background: hex}; };
+const fmtPrice = (p) => CURRENCY + Number(p).toLocaleString("en-AU", {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-function App() {
+// ===== ConfigError: shown if Supabase isn't set up =====
+function ConfigError() {
+  return (
+    <div className="auth-bg">
+      <div className="modal" style={{textAlign:"center",maxWidth:480}}>
+        <div style={{fontSize:50,marginBottom:12}}>⚙️</div>
+        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",margin:"0 0 12px"}}>Configuration Needed</h2>
+        <div className="info-msg" style={{textAlign:"left"}}>
+          <strong>Set up Supabase first:</strong>
+          <ol style={{marginTop:8,paddingLeft:20,lineHeight:1.8}}>
+            <li>Sign up free at <strong>supabase.com</strong></li>
+            <li>Create a new project</li>
+            <li>SQL Editor → run the <code>supabase-setup.sql</code> script</li>
+            <li>Settings → API → copy the URL and anon key</li>
+            <li>Paste them at the top of <code>index.html</code></li>
+            <li>Push to GitHub</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== AuthScreen =====
+function AuthScreen() {
+  const [mode, setMode] = useState("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    setError(""); setInfo(""); setLoading(true);
+    try {
+      if (mode === "signup") {
+        const { data, error } = await sb.auth.signUp({ email, password });
+        if (error) throw error;
+        if (!data.session) {
+          setInfo("Check your email for a confirmation link to complete signup.");
+        }
+      } else {
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      }
+    } catch (e) { setError(e.message || "Something went wrong"); }
+    setLoading(false);
+  };
+
+  return (
+    <div className="auth-bg">
+      <div className="modal" style={{maxWidth:400}}>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <div style={{fontSize:50,marginBottom:8}}>✨</div>
+          <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",fontWeight:600,letterSpacing:"0.02em"}}>My Wardrobe</h1>
+          <p style={{fontSize:12,color:"#b08080",letterSpacing:"0.1em",textTransform:"uppercase",fontWeight:700,marginTop:4}}>{mode === "signup" ? "Create Account" : "Welcome Back"}</p>
+        </div>
+        <div style={{display:"grid",gap:14}}>
+          <div><label className="label">Email</label>
+            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" style={{width:"100%"}} autoFocus />
+          </div>
+          <div><label className="label">Password</label>
+            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()} placeholder={mode==="signup"?"At least 6 characters":"Your password"} style={{width:"100%"}} />
+          </div>
+          {error && <div className="err-msg">{error}</div>}
+          {info && <div className="info-msg">{info}</div>}
+          <button className="btn-primary" onClick={submit} disabled={loading || !email || !password}>
+            {loading ? <span className="spinner" /> : (mode === "signup" ? "Create Account" : "Sign In")}
+          </button>
+          <div style={{textAlign:"center",fontSize:13,color:"#9e6b6b"}}>
+            {mode === "signup" ? "Already have an account?" : "New here?"}{" "}
+            <button className="btn-link" onClick={()=>{setMode(mode==="signup"?"signin":"signup"); setError(""); setInfo("");}}>
+              {mode === "signup" ? "Sign in" : "Create an account"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Main Wardrobe App =====
+function WardrobeApp({ session }) {
+  const userId = session.user.id;
   const [profiles, setProfiles] = useState([]);
   const [activeProfileId, setActiveProfileId] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [showProfileSetup, setShowProfileSetup] = useState(false);
   const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
   const [pinPrompt, setPinPrompt] = useState(null);
@@ -85,6 +189,7 @@ function App() {
   const [newProfileName, setNewProfileName] = useState("");
   const [newProfilePin, setNewProfilePin] = useState("");
   const [items, setItems] = useState([]);
+  const [itemsLoading, setItemsLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyItem);
@@ -96,76 +201,125 @@ function App() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState("grid");
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [saving, setSaving] = useState(false);
 
+  // Load profiles on mount
   useEffect(() => {
-    try {
-      const savedProfiles = JSON.parse(localStorage.getItem("wardrobe-profiles") || "[]");
-      const savedActive = localStorage.getItem("wardrobe-active-profile");
-      setProfiles(savedProfiles);
-      if (savedProfiles.length === 0) { setShowProfileSetup(true); }
-      else {
-        const profileToLoad = savedProfiles.find(p => p.id === savedActive) || savedProfiles[0];
-        if (profileToLoad.pinHash) setPinPrompt({profileId: profileToLoad.id});
-        else setActiveProfileId(profileToLoad.id);
+    (async () => {
+      setLoading(true);
+      const { data, error } = await sb.from("wardrobe_profiles").select("*").order("created_at", { ascending: true });
+      if (!error && data) {
+        setProfiles(data);
+        if (data.length === 0) {
+          setShowProfileSetup(true);
+        } else {
+          const lastActive = localStorage.getItem("wardrobe-active-profile");
+          const profileToLoad = data.find(p => p.id === lastActive) || data[0];
+          if (profileToLoad.pin_hash) setPinPrompt({profileId: profileToLoad.id});
+          else setActiveProfileId(profileToLoad.id);
+        }
       }
-    } catch {}
-  }, []);
+      setLoading(false);
+    })();
+  }, [userId]);
 
+  // Load items when active profile changes
   useEffect(() => {
     if (!activeProfileId) return;
-    try {
-      const saved = localStorage.getItem(`wardrobe-items-${activeProfileId}`);
-      setItems(saved ? JSON.parse(saved) : []);
+    (async () => {
+      setItemsLoading(true);
       localStorage.setItem("wardrobe-active-profile", activeProfileId);
-    } catch {}
+      const { data, error } = await sb.from("wardrobe_items").select("*").eq("profile_id", activeProfileId).order("created_at", { ascending: false });
+      if (!error && data) setItems(data);
+      setItemsLoading(false);
+    })();
   }, [activeProfileId]);
 
-  const saveItems = (newItems) => { setItems(newItems); try { localStorage.setItem(`wardrobe-items-${activeProfileId}`, JSON.stringify(newItems)); } catch {} };
-  const saveProfiles = (newProfiles) => { setProfiles(newProfiles); try { localStorage.setItem("wardrobe-profiles", JSON.stringify(newProfiles)); } catch {} };
-
-  const createProfile = () => {
+  const createProfile = async () => {
     if (!newProfileName.trim()) return;
-    const profile = {id: Date.now().toString(), name: newProfileName.trim(), pinHash: newProfilePin ? hashPin(newProfilePin) : null};
-    saveProfiles([...profiles, profile]);
-    setActiveProfileId(profile.id);
-    setNewProfileName(""); setNewProfilePin(""); setShowProfileSetup(false); setShowProfileSwitcher(false);
+    setSaving(true);
+    const { data, error } = await sb.from("wardrobe_profiles").insert({
+      user_id: userId,
+      name: newProfileName.trim(),
+      pin_hash: newProfilePin ? hashPin(newProfilePin) : null
+    }).select().single();
+    if (!error && data) {
+      setProfiles([...profiles, data]);
+      setActiveProfileId(data.id);
+      setNewProfileName(""); setNewProfilePin("");
+      setShowProfileSetup(false); setShowProfileSwitcher(false);
+    }
+    setSaving(false);
   };
 
   const switchProfile = (profileId) => {
     const profile = profiles.find(p => p.id === profileId);
     if (!profile) return;
-    if (profile.pinHash && profile.id !== activeProfileId) { setPinPrompt({profileId}); setShowProfileSwitcher(false); }
+    if (profile.pin_hash && profile.id !== activeProfileId) { setPinPrompt({profileId}); setShowProfileSwitcher(false); }
     else { setActiveProfileId(profileId); setShowProfileSwitcher(false); }
   };
 
   const verifyPin = () => {
     const profile = profiles.find(p => p.id === pinPrompt.profileId);
-    if (profile && hashPin(pinValue) === profile.pinHash) {
+    if (profile && hashPin(pinValue) === profile.pin_hash) {
       setActiveProfileId(profile.id); setPinPrompt(null); setPinValue(""); setPinError("");
     } else { setPinError("Incorrect PIN"); setPinValue(""); }
   };
 
-  const deleteProfile = (profileId) => {
-    if (!confirm("Delete this profile and all its items? This can't be undone.")) return;
-    const updated = profiles.filter(p => p.id !== profileId);
-    saveProfiles(updated);
-    try { localStorage.removeItem(`wardrobe-items-${profileId}`); } catch {}
-    if (activeProfileId === profileId) {
-      if (updated.length > 0) setActiveProfileId(updated[0].id);
-      else { setActiveProfileId(null); setShowProfileSetup(true); }
+  const deleteProfile = async (profileId) => {
+    if (!confirm("Delete this profile and ALL its items? This cannot be undone.")) return;
+    const { error } = await sb.from("wardrobe_profiles").delete().eq("id", profileId);
+    if (!error) {
+      const updated = profiles.filter(p => p.id !== profileId);
+      setProfiles(updated);
+      if (activeProfileId === profileId) {
+        if (updated.length > 0) setActiveProfileId(updated[0].id);
+        else { setActiveProfileId(null); setItems([]); setShowProfileSetup(true); }
+      }
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.name.trim()) return;
-    const cleanForm = {...form, price: form.price === "" ? null : parseFloat(form.price) || null};
-    if (editingId !== null) saveItems(items.map(i => i.id === editingId ? {...cleanForm, id: editingId} : i));
-    else saveItems([...items, {...cleanForm, id: Date.now()}]);
-    setShowForm(false); setEditingId(null); setForm(emptyItem);
+    setSaving(true);
+    const payload = {
+      profile_id: activeProfileId,
+      user_id: userId,
+      name: form.name.trim(),
+      type: form.type,
+      colour: form.colour,
+      season: form.season,
+      occasion: form.occasion,
+      size: form.size,
+      brand: form.brand || null,
+      notes: form.notes || null,
+      price: form.price === "" ? null : parseFloat(form.price) || null
+    };
+    if (editingId) {
+      const { data, error } = await sb.from("wardrobe_items").update(payload).eq("id", editingId).select().single();
+      if (!error && data) setItems(items.map(i => i.id === editingId ? data : i));
+    } else {
+      const { data, error } = await sb.from("wardrobe_items").insert(payload).select().single();
+      if (!error && data) setItems([data, ...items]);
+    }
+    setShowForm(false); setEditingId(null); setForm(emptyItem); setSaving(false);
   };
 
-  const handleEdit = (item) => { setForm({...item, price: item.price != null ? String(item.price) : ""}); setEditingId(item.id); setShowForm(true); };
-  const handleDelete = (id) => { saveItems(items.filter(i => i.id !== id)); setDeleteConfirm(null); };
+  const handleEdit = (item) => {
+    setForm({...item, brand: item.brand || "", notes: item.notes || "", price: item.price != null ? String(item.price) : ""});
+    setEditingId(item.id); setShowForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    const { error } = await sb.from("wardrobe_items").delete().eq("id", id);
+    if (!error) setItems(items.filter(i => i.id !== id));
+    setDeleteConfirm(null);
+  };
+
+  const logout = async () => {
+    if (!confirm("Sign out? You'll need to log back in to see your wardrobe.")) return;
+    await sb.auth.signOut();
+  };
 
   const filtered = useMemo(() => {
     let list = [...items];
@@ -174,8 +328,8 @@ function App() {
     if (filterSeason !== "All") list = list.filter(i => i.season === filterSeason);
     if (filterOccasion !== "All") list = list.filter(i => i.occasion === filterOccasion);
     if (search) list = list.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) || (i.brand||"").toLowerCase().includes(search.toLowerCase()) || (i.notes||"").toLowerCase().includes(search.toLowerCase()));
-    if (sortBy === "newest") list.sort((a,b) => b.id - a.id);
-    if (sortBy === "oldest") list.sort((a,b) => a.id - b.id);
+    if (sortBy === "newest") list.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+    if (sortBy === "oldest") list.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
     if (sortBy === "name") list.sort((a,b) => a.name.localeCompare(b.name));
     if (sortBy === "type") list.sort((a,b) => a.type.localeCompare(b.type));
     if (sortBy === "colour") list.sort((a,b) => a.colour.localeCompare(b.colour));
@@ -185,15 +339,17 @@ function App() {
   }, [items, filterType, filterColour, filterSeason, filterOccasion, search, sortBy]);
 
   const statsByType = TYPES.map(t => ({t, count: items.filter(i => i.type === t).length})).filter(x => x.count > 0);
-  const totalValue = items.reduce((sum, i) => sum + (i.price || 0), 0);
-  const itemsWithPrice = items.filter(i => i.price > 0).length;
-  const colourStyle = (c) => { const hex = COLOUR_HEX[c]; if (!hex) return {background:"#ccc"}; if (hex.includes("gradient")) return {backgroundImage: hex}; return {background: hex}; };
+  const totalValue = items.reduce((sum, i) => sum + (Number(i.price) || 0), 0);
+  const itemsWithPrice = items.filter(i => Number(i.price) > 0).length;
   const activeProfile = profiles.find(p => p.id === activeProfileId);
-  const fmtPrice = (p) => CURRENCY + Number(p).toLocaleString("en-AU", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+  if (loading) {
+    return <div className="auth-bg"><div style={{textAlign:"center",color:"#9e6b6b"}}><div className="spinner" style={{marginBottom:12}}/><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.2rem"}}>Loading your wardrobe…</div></div></div>;
+  }
 
   if (showProfileSetup) {
     return (
-      <div className="modal-overlay" style={{background:"#faf7f4"}}>
+      <div className="auth-bg">
         <div className="modal" style={{textAlign:"center"}}>
           <div style={{fontSize:50,marginBottom:12}}>✨</div>
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",margin:"0 0 8px"}}>{profiles.length === 0 ? "Welcome!" : "New Profile"}</h2>
@@ -204,12 +360,12 @@ function App() {
             </div>
             <div><label className="label">PIN (optional, 4 digits)</label>
               <input type="password" inputMode="numeric" maxLength="4" value={newProfilePin} onChange={e=>setNewProfilePin(e.target.value.replace(/\D/g,""))} placeholder="Leave blank for no PIN" style={{width:"100%"}} />
-              <p style={{fontSize:11,color:"#b08080",marginTop:4,fontStyle:"italic"}}>A soft lock to keep profiles separate. Not high security — anyone with browser access can bypass it.</p>
+              <p style={{fontSize:11,color:"#b08080",marginTop:4,fontStyle:"italic"}}>A soft lock to keep profiles separate within your account.</p>
             </div>
           </div>
           <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:24}}>
             {profiles.length > 0 && <button className="btn-ghost" onClick={()=>setShowProfileSetup(false)}>Cancel</button>}
-            <button className="btn-primary" onClick={createProfile} disabled={!newProfileName.trim()}>Create Profile</button>
+            <button className="btn-primary" onClick={createProfile} disabled={!newProfileName.trim() || saving}>{saving ? <span className="spinner"/> : "Create Profile"}</button>
           </div>
         </div>
       </div>
@@ -219,7 +375,7 @@ function App() {
   if (pinPrompt) {
     const profile = profiles.find(p => p.id === pinPrompt.profileId);
     return (
-      <div className="modal-overlay" style={{background:"#faf7f4"}}>
+      <div className="auth-bg">
         <div className="modal" style={{textAlign:"center",maxWidth:380}}>
           <div style={{fontSize:40,marginBottom:12}}>🔒</div>
           <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",margin:"0 0 4px"}}>{profile?.name}'s Wardrobe</h2>
@@ -246,140 +402,146 @@ function App() {
             <p style={{fontSize:11,color:"#b08080",letterSpacing:"0.1em",textTransform:"uppercase",fontWeight:700}}>{items.length} piece{items.length !== 1 ? "s" : ""}{totalValue > 0 ? ` · ${fmtPrice(totalValue)}` : ""}</p>
           </div>
           <div style={{display:"flex",gap:8,alignItems:"center"}}>
-            <button className="profile-btn" onClick={()=>setShowProfileSwitcher(true)}>👤 Switch</button>
+            <button className="profile-btn" onClick={()=>setShowProfileSwitcher(true)}>👤 {activeProfile?.name}</button>
             <button className="btn-primary" onClick={()=>{setForm(emptyItem);setEditingId(null);setShowForm(true);}}>+ Add Item</button>
           </div>
         </div>
       </div>
 
       <div className="content">
-        {(statsByType.length > 0 || totalValue > 0) && (
-          <div className="stats-row">
-            {totalValue > 0 && (
-              <div className="stat-card featured">
-                <div style={{fontSize:18,marginBottom:2}}>💰</div>
-                <div style={{fontWeight:700,fontSize:18,color:"#8a6a3e",fontFamily:"'Cormorant Garamond',serif"}}>{fmtPrice(totalValue)}</div>
-                <div style={{fontSize:10,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>Total Value{itemsWithPrice < items.length ? ` (${itemsWithPrice}/${items.length})` : ""}</div>
+        {itemsLoading ? (
+          <div style={{textAlign:"center",padding:"60px 20px",color:"#9e6b6b"}}><div className="spinner" style={{marginBottom:12}}/><div>Loading items…</div></div>
+        ) : (
+          <>
+            {(statsByType.length > 0 || totalValue > 0) && (
+              <div className="stats-row">
+                {totalValue > 0 && (
+                  <div className="stat-card featured">
+                    <div style={{fontSize:18,marginBottom:2}}>💰</div>
+                    <div style={{fontWeight:700,fontSize:18,color:"#8a6a3e",fontFamily:"'Cormorant Garamond',serif"}}>{fmtPrice(totalValue)}</div>
+                    <div style={{fontSize:10,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>Total Value{itemsWithPrice < items.length ? ` (${itemsWithPrice}/${items.length})` : ""}</div>
+                  </div>
+                )}
+                {statsByType.map(({t,count}) => (
+                  <div key={t} className="stat-card">
+                    <div style={{fontSize:20,marginBottom:2}}>{TYPE_ICONS[t]}</div>
+                    <div style={{fontWeight:700,fontSize:18,color:"#c47b7b"}}>{count}</div>
+                    <div style={{fontSize:10,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{t}</div>
+                  </div>
+                ))}
               </div>
             )}
-            {statsByType.map(({t,count}) => (
-              <div key={t} className="stat-card">
-                <div style={{fontSize:20,marginBottom:2}}>{TYPE_ICONS[t]}</div>
-                <div style={{fontWeight:700,fontSize:18,color:"#c47b7b"}}>{count}</div>
-                <div style={{fontSize:10,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{t}</div>
+
+            <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+              <input type="text" placeholder="🔍 Search by name, brand, notes…" value={search} onChange={e=>setSearch(e.target.value)} style={{flex:1,minWidth:200}} />
+              <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{minWidth:130}}>
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">Name A–Z</option>
+                <option value="type">Type</option>
+                <option value="colour">Colour</option>
+                <option value="price-high">Price (High)</option>
+                <option value="price-low">Price (Low)</option>
+              </select>
+              <div className="view-toggle">
+                {["grid","list"].map(v => (
+                  <button key={v} className="view-btn" onClick={()=>setView(v)} style={{background:view===v?"#fdf0ee":"transparent",color:view===v?"#c47b7b":"#b08080"}}>{v==="grid"?"⊞":"☰"}</button>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
 
-        <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
-          <input type="text" placeholder="🔍 Search by name, brand, notes…" value={search} onChange={e=>setSearch(e.target.value)} style={{flex:1,minWidth:200}} />
-          <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{minWidth:130}}>
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="name">Name A–Z</option>
-            <option value="type">Type</option>
-            <option value="colour">Colour</option>
-            <option value="price-high">Price (High)</option>
-            <option value="price-low">Price (Low)</option>
-          </select>
-          <div className="view-toggle">
-            {["grid","list"].map(v => (
-              <button key={v} className="view-btn" onClick={()=>setView(v)} style={{background:view===v?"#fdf0ee":"transparent",color:view===v?"#c47b7b":"#b08080"}}>{v==="grid"?"⊞":"☰"}</button>
-            ))}
-          </div>
-        </div>
-
-        <div style={{marginBottom:20}}>
-          <div className="filters-row"><span className="filter-label">Type</span>
-            {["All",...TYPES].map(t => (<button key={t} className={`filter-btn ${filterType===t?"active":""}`} onClick={()=>setFilterType(t)}>{t!=="All"?TYPE_ICONS[t]+" ":""}{t}</button>))}
-          </div>
-          <div className="filters-row"><span className="filter-label">Colour</span>
-            {["All",...COLOURS].map(c => (
-              <button key={c} className={`filter-btn ${filterColour===c?"active":""}`} onClick={()=>setFilterColour(c)} style={{display:"flex",alignItems:"center",gap:5}}>
-                {c!=="All" && <span style={{...colourStyle(c),width:10,height:10,borderRadius:"50%",display:"inline-block",border:"1px solid rgba(0,0,0,0.1)"}} />}
-                {c}
-              </button>
-            ))}
-          </div>
-          <div className="filters-row"><span className="filter-label">Season</span>
-            {["All",...SEASONS].map(s=>(<button key={s} className={`filter-btn ${filterSeason===s?"active":""}`} onClick={()=>setFilterSeason(s)}>{s}</button>))}
-          </div>
-          <div className="filters-row"><span className="filter-label">Occasion</span>
-            {["All",...OCCASIONS].map(o=>(<button key={o} className={`filter-btn ${filterOccasion===o?"active":""}`} onClick={()=>setFilterOccasion(o)}>{o}</button>))}
-          </div>
-        </div>
-
-        <p style={{fontSize:12,color:"#b08080",marginBottom:14,letterSpacing:"0.05em"}}>Showing {filtered.length} of {items.length} items</p>
-
-        {items.length === 0 && (
-          <div className="empty-state">
-            <div style={{fontSize:60,marginBottom:16}}>👗</div>
-            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",color:"#9e6b6b",fontWeight:400,margin:"0 0 8px"}}>Your wardrobe awaits</h2>
-            <p style={{color:"#b08080",margin:"0 0 24px"}}>Start adding your clothes to build your digital closet</p>
-            <button className="btn-primary" onClick={()=>{setForm(emptyItem);setEditingId(null);setShowForm(true);}}>Add Your First Item</button>
-          </div>
-        )}
-
-        {filtered.length === 0 && items.length > 0 && (
-          <div style={{textAlign:"center",padding:"40px 20px",color:"#b08080"}}>
-            <div style={{fontSize:40,marginBottom:12}}>🔍</div>
-            <p>No items match your filters.</p>
-          </div>
-        )}
-
-        {view === "grid" ? (
-          <div className="grid">
-            {filtered.map(item => (
-              <div key={item.id} className="card" onClick={()=>handleEdit(item)}>
-                <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
-                  <div style={{fontSize:28}}>{TYPE_ICONS[item.type]||"👚"}</div>
-                  <div className="colour-dot" style={colourStyle(item.colour)} />
-                </div>
-                <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:"1rem",margin:"0 0 4px",color:"#3d2c2c",lineHeight:1.3}}>{item.name}</h3>
-                {item.brand && <p style={{margin:"0 0 4px",fontSize:11,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.brand}</p>}
-                {item.price > 0 && <p className="price" style={{margin:"0 0 8px"}}>{fmtPrice(item.price)}</p>}
-                <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6}}>
-                  <span className="pill">{item.type}</span>
-                  <span className="pill">{item.colour}</span>
-                </div>
-                <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-                  {item.size && <span className="pill">Size {item.size}</span>}
-                  {item.season !== "All Seasons" && <span className="pill">{item.season}</span>}
-                  {item.occasion && <span className="pill">{item.occasion}</span>}
-                </div>
-                {item.notes && <p style={{margin:"8px 0 0",fontSize:11,color:"#b08080",fontStyle:"italic",lineHeight:1.4}}>{item.notes}</p>}
-                <div style={{display:"flex",justifyContent:"flex-end",marginTop:10}}>
-                  <button className="delete-btn" onClick={e=>{e.stopPropagation();setDeleteConfirm(item.id);}}>🗑</button>
-                </div>
+            <div style={{marginBottom:20}}>
+              <div className="filters-row"><span className="filter-label">Type</span>
+                {["All",...TYPES].map(t => (<button key={t} className={`filter-btn ${filterType===t?"active":""}`} onClick={()=>setFilterType(t)}>{t!=="All"?TYPE_ICONS[t]+" ":""}{t}</button>))}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div>
-            {filtered.map(item => (
-              <div key={item.id} className="list-row" onClick={()=>handleEdit(item)}>
-                <div style={{fontSize:22,flexShrink:0}}>{TYPE_ICONS[item.type]}</div>
-                <div className="colour-dot" style={colourStyle(item.colour)} />
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}>
-                    <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:"1rem"}}>{item.name}</span>
-                    {item.brand && <span style={{fontSize:11,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.brand}</span>}
-                    {item.price > 0 && <span className="pill pill-price">{fmtPrice(item.price)}</span>}
+              <div className="filters-row"><span className="filter-label">Colour</span>
+                {["All",...COLOURS].map(c => (
+                  <button key={c} className={`filter-btn ${filterColour===c?"active":""}`} onClick={()=>setFilterColour(c)} style={{display:"flex",alignItems:"center",gap:5}}>
+                    {c!=="All" && <span style={{...colourStyle(c),width:10,height:10,borderRadius:"50%",display:"inline-block",border:"1px solid rgba(0,0,0,0.1)"}} />}
+                    {c}
+                  </button>
+                ))}
+              </div>
+              <div className="filters-row"><span className="filter-label">Season</span>
+                {["All",...SEASONS].map(s=>(<button key={s} className={`filter-btn ${filterSeason===s?"active":""}`} onClick={()=>setFilterSeason(s)}>{s}</button>))}
+              </div>
+              <div className="filters-row"><span className="filter-label">Occasion</span>
+                {["All",...OCCASIONS].map(o=>(<button key={o} className={`filter-btn ${filterOccasion===o?"active":""}`} onClick={()=>setFilterOccasion(o)}>{o}</button>))}
+              </div>
+            </div>
+
+            <p style={{fontSize:12,color:"#b08080",marginBottom:14,letterSpacing:"0.05em"}}>Showing {filtered.length} of {items.length} items</p>
+
+            {items.length === 0 && (
+              <div className="empty-state">
+                <div style={{fontSize:60,marginBottom:16}}>👗</div>
+                <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",color:"#9e6b6b",fontWeight:400,margin:"0 0 8px"}}>Your wardrobe awaits</h2>
+                <p style={{color:"#b08080",margin:"0 0 24px"}}>Start adding clothes to build your digital closet</p>
+                <button className="btn-primary" onClick={()=>{setForm(emptyItem);setEditingId(null);setShowForm(true);}}>Add Your First Item</button>
+              </div>
+            )}
+
+            {filtered.length === 0 && items.length > 0 && (
+              <div style={{textAlign:"center",padding:"40px 20px",color:"#b08080"}}>
+                <div style={{fontSize:40,marginBottom:12}}>🔍</div>
+                <p>No items match your filters.</p>
+              </div>
+            )}
+
+            {view === "grid" ? (
+              <div className="grid">
+                {filtered.map(item => (
+                  <div key={item.id} className="card" onClick={()=>handleEdit(item)}>
+                    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
+                      <div style={{fontSize:28}}>{TYPE_ICONS[item.type]||"👚"}</div>
+                      <div className="colour-dot" style={colourStyle(item.colour)} />
+                    </div>
+                    <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:"1rem",margin:"0 0 4px",color:"#3d2c2c",lineHeight:1.3}}>{item.name}</h3>
+                    {item.brand && <p style={{margin:"0 0 4px",fontSize:11,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.brand}</p>}
+                    {Number(item.price) > 0 && <p className="price" style={{margin:"0 0 8px"}}>{fmtPrice(item.price)}</p>}
+                    <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6}}>
+                      <span className="pill">{item.type}</span>
+                      <span className="pill">{item.colour}</span>
+                    </div>
+                    <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                      {item.size && <span className="pill">Size {item.size}</span>}
+                      {item.season !== "All Seasons" && <span className="pill">{item.season}</span>}
+                      {item.occasion && <span className="pill">{item.occasion}</span>}
+                    </div>
+                    {item.notes && <p style={{margin:"8px 0 0",fontSize:11,color:"#b08080",fontStyle:"italic",lineHeight:1.4}}>{item.notes}</p>}
+                    <div style={{display:"flex",justifyContent:"flex-end",marginTop:10}}>
+                      <button className="delete-btn" onClick={e=>{e.stopPropagation();setDeleteConfirm(item.id);}}>🗑</button>
+                    </div>
                   </div>
-                  <div style={{display:"flex",gap:4,marginTop:3,flexWrap:"wrap"}}>
-                    <span className="pill">{item.type}</span>
-                    <span className="pill">{item.colour}</span>
-                    {item.size && <span className="pill">Size {item.size}</span>}
-                    {item.season !== "All Seasons" && <span className="pill">{item.season}</span>}
-                    {item.occasion && <span className="pill">{item.occasion}</span>}
-                  </div>
-                </div>
-                {item.notes && <p style={{margin:0,fontSize:11,color:"#b08080",fontStyle:"italic",maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.notes}</p>}
-                <button className="delete-btn" style={{fontSize:16,flexShrink:0}} onClick={e=>{e.stopPropagation();setDeleteConfirm(item.id);}}>🗑</button>
+                ))}
               </div>
-            ))}
-          </div>
+            ) : (
+              <div>
+                {filtered.map(item => (
+                  <div key={item.id} className="list-row" onClick={()=>handleEdit(item)}>
+                    <div style={{fontSize:22,flexShrink:0}}>{TYPE_ICONS[item.type]}</div>
+                    <div className="colour-dot" style={colourStyle(item.colour)} />
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}>
+                        <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:"1rem"}}>{item.name}</span>
+                        {item.brand && <span style={{fontSize:11,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.brand}</span>}
+                        {Number(item.price) > 0 && <span className="pill pill-price">{fmtPrice(item.price)}</span>}
+                      </div>
+                      <div style={{display:"flex",gap:4,marginTop:3,flexWrap:"wrap"}}>
+                        <span className="pill">{item.type}</span>
+                        <span className="pill">{item.colour}</span>
+                        {item.size && <span className="pill">Size {item.size}</span>}
+                        {item.season !== "All Seasons" && <span className="pill">{item.season}</span>}
+                        {item.occasion && <span className="pill">{item.occasion}</span>}
+                      </div>
+                    </div>
+                    {item.notes && <p style={{margin:0,fontSize:11,color:"#b08080",fontStyle:"italic",maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.notes}</p>}
+                    <button className="delete-btn" style={{fontSize:16,flexShrink:0}} onClick={e=>{e.stopPropagation();setDeleteConfirm(item.id);}}>🗑</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -412,8 +574,8 @@ function App() {
               </div>
             </div>
             <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}>
-              <button className="btn-ghost" onClick={()=>{setShowForm(false);setEditingId(null);}}>Cancel</button>
-              <button className="btn-primary" onClick={handleSubmit} disabled={!form.name.trim()}>{editingId?"Save Changes":"Add to Wardrobe"}</button>
+              <button className="btn-ghost" onClick={()=>{setShowForm(false);setEditingId(null);}} disabled={saving}>Cancel</button>
+              <button className="btn-primary" onClick={handleSubmit} disabled={!form.name.trim() || saving}>{saving ? <span className="spinner"/> : (editingId?"Save Changes":"Add to Wardrobe")}</button>
             </div>
           </div>
         </div>
@@ -436,20 +598,24 @@ function App() {
       {showProfileSwitcher && (
         <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setShowProfileSwitcher(false)}>
           <div className="modal" style={{maxWidth:420}}>
-            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:600,margin:"0 0 16px"}}>Switch Profile</h2>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:600,margin:"0 0 4px"}}>Profiles</h2>
+            <p style={{fontSize:12,color:"#b08080",margin:"0 0 16px"}}>Signed in as {session.user.email}</p>
             <div style={{display:"grid",gap:8,marginBottom:16}}>
               {profiles.map(p => (
                 <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,background:p.id===activeProfileId?"#fdf0ee":"white",border:"1px solid",borderColor:p.id===activeProfileId?"#f0d4d0":"#e8d8d8",borderRadius:10,padding:"12px 14px"}}>
                   <div style={{flex:1,cursor:p.id===activeProfileId?"default":"pointer"}} onClick={()=>p.id!==activeProfileId&&switchProfile(p.id)}>
                     <div style={{fontWeight:700,color:"#3d2c2c"}}>{p.name} {p.id===activeProfileId&&<span style={{fontSize:11,color:"#9e6b6b",fontWeight:400}}>(active)</span>}</div>
-                    <div style={{fontSize:11,color:"#b08080",marginTop:2}}>{p.pinHash?"🔒 PIN protected":"🔓 No PIN"}</div>
+                    <div style={{fontSize:11,color:"#b08080",marginTop:2}}>{p.pin_hash?"🔒 PIN protected":"🔓 No PIN"}</div>
                   </div>
                   <button className="delete-btn" onClick={()=>deleteProfile(p.id)} title="Delete profile">🗑</button>
                 </div>
               ))}
             </div>
             <div style={{display:"flex",gap:10,justifyContent:"space-between",flexWrap:"wrap"}}>
-              <button className="btn-ghost" onClick={()=>{setShowProfileSwitcher(false); setShowProfileSetup(true);}}>+ New Profile</button>
+              <div style={{display:"flex",gap:8}}>
+                <button className="btn-ghost" onClick={()=>{setShowProfileSwitcher(false); setShowProfileSetup(true);}}>+ New Profile</button>
+                <button className="btn-ghost" onClick={logout} style={{color:"#b06868"}}>Sign Out</button>
+              </div>
               <button className="btn-primary" onClick={()=>setShowProfileSwitcher(false)}>Done</button>
             </div>
           </div>
@@ -457,6 +623,23 @@ function App() {
       )}
     </>
   );
+}
+
+// ===== Root App with auth state =====
+function App() {
+  const [session, setSession] = useState(undefined);
+
+  useEffect(() => {
+    if (!sb) return;
+    sb.auth.getSession().then(({data}) => setSession(data.session));
+    const {data: {subscription}} = sb.auth.onAuthStateChange((_event, sess) => setSession(sess));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (!sb) return <ConfigError />;
+  if (session === undefined) return <div className="auth-bg"><div className="spinner"/></div>;
+  if (!session) return <AuthScreen />;
+  return <WardrobeApp session={session} key={session.user.id} />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
