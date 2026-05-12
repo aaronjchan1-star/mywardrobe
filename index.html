@@ -16,10 +16,15 @@
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: #f5ede8; }
     ::-webkit-scrollbar-thumb { background: #d4a5a5; border-radius: 2px; }
-    .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 12px rgba(139,94,94,0.08); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: 1px solid #f0e6e6; }
+    .card { background: white; border-radius: 12px; padding: 0; box-shadow: 0 2px 12px rgba(139,94,94,0.08); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: 1px solid #f0e6e6; overflow: hidden; display: flex; flex-direction: column; }
     .card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(139,94,94,0.14); }
+    .card-photo { width: 100%; aspect-ratio: 1; background: #faf7f4; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .card-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .card-photo-placeholder { font-size: 50px; opacity: 0.4; }
+    .card-body { padding: 14px; }
     .pill { display: inline-block; background: #fdf0ee; border: 1px solid #f0d4d0; border-radius: 20px; padding: 2px 10px; font-size: 11px; letter-spacing: 0.05em; color: #9e6b6b; }
     .pill-price { background: #f3ede4; border-color: #e0d4c0; color: #8a6a3e; font-weight: 700; }
+    .pill-photo { background: #eaf5ed; border-color: #c8e6d0; color: #4a7d5b; }
     .btn-primary { background: #c47b7b; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
     .btn-primary:hover:not(:disabled) { background: #b06868; }
     .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -36,11 +41,13 @@
     .modal { background: white; border-radius: 16px; padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(61,44,44,0.2); }
     .stat-card { background: white; border-radius: 12px; padding: 14px 18px; border: 1px solid #f0e6e6; text-align: center; flex-shrink: 0; min-width: 90px; }
     .stat-card.featured { background: linear-gradient(135deg, #fdf0ee, #f9e3df); border-color: #f0d4d0; min-width: 130px; }
-    .list-row { background: white; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border: 1px solid #f0e6e6; margin-bottom: 6px; transition: box-shadow 0.2s; cursor: pointer; }
+    .list-row { background: white; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; border: 1px solid #f0e6e6; margin-bottom: 6px; transition: box-shadow 0.2s; cursor: pointer; }
     .list-row:hover { box-shadow: 0 4px 16px rgba(139,94,94,0.1); }
+    .list-thumb { width: 48px; height: 48px; border-radius: 8px; background: #faf7f4; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .list-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .colour-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.6); box-shadow: 0 1px 4px rgba(0,0,0,0.2); flex-shrink: 0; }
     .filters-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding-bottom: 8px; }
-    .stats-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 24px; scrollbar-width: thin; }
+    .stats-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; scrollbar-width: thin; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
@@ -63,20 +70,31 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .err-msg { background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px 12px; border-radius: 6px; font-size: 12px; }
     .info-msg { background: #fdf0ee; border: 1px solid #f0d4d0; color: #9e6b6b; padding: 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; }
+    .storage-meter { background: white; border-radius: 12px; border: 1px solid #f0e6e6; padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .storage-bar { flex: 1; min-width: 180px; height: 8px; background: #f5ede8; border-radius: 4px; overflow: hidden; position: relative; }
+    .storage-fill { height: 100%; transition: width 0.3s, background 0.3s; border-radius: 4px; }
+    .photo-upload-area { border: 2px dashed #e8d8d8; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+    .photo-upload-area:hover { border-color: #c47b7b; background: #fdf0ee; }
+    .photo-preview { position: relative; border-radius: 10px; overflow: hidden; max-width: 200px; margin: 0 auto; }
+    .photo-preview img { width: 100%; display: block; }
+    .photo-preview-remove { position: absolute; top: 6px; right: 6px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .photo-preview-remove:hover { background: white; }
+    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px; cursor: zoom-out; }
+    .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 80px rgba(0,0,0,0.4); }
+    .lightbox-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; }
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
 // ===========================================================
-// SUPABASE CONFIGURATION — paste your project values here
-// Get them from: Supabase Dashboard → Project Settings → API
+// SUPABASE CONFIGURATION
 // ===========================================================
-const SUPABASE_URL = "https://jatugyrqttidwnhnrvqn.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphdHVneXJxdHRpZHduaG5ydnFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzMTkwMzgsImV4cCI6MjA5Mzg5NTAzOH0.6c8YIiBZeWDA_g15VdTJfFNyyArvGLYytii3SGo7_IA";
+const SUPABASE_URL = "PASTE_YOUR_PROJECT_URL_HERE";
+const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_PUBLIC_KEY_HERE";
 // ===========================================================
 
-const { useState, useEffect, useMemo, useCallback } = React;
+const { useState, useEffect, useMemo, useRef } = React;
 const sb = (SUPABASE_URL && SUPABASE_URL !== "PASTE_YOUR_PROJECT_URL_HERE")
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
@@ -88,13 +106,52 @@ const OCCASIONS = ["Casual","Work","Formal","Sport","Evening","Beach","Loungewea
 const SIZES = ["XXS","XS","S","M","L","XL","XXL","6","8","10","12","14","16","18","One Size"];
 const COLOUR_HEX = {Black:"#1a1a1a",White:"#f8f8f8",Grey:"#9ca3af",Beige:"#d4b896",Brown:"#92400e",Red:"#dc2626",Pink:"#f472b6",Orange:"#f97316",Yellow:"#fbbf24",Green:"#16a34a",Blue:"#3b82f6",Purple:"#9333ea",Navy:"#1e3a5f",Gold:"#d97706",Silver:"#94a3b8",Multi:"linear-gradient(135deg,#f472b6,#60a5fa,#34d399)"};
 const TYPE_ICONS = {Tops:"👚",Bottoms:"👖",Dresses:"👗",Outerwear:"🧥",Shoes:"👠",Bags:"👜",Accessories:"💍",Activewear:"🏃‍♀️",Sleepwear:"🌙",Swimwear:"👙"};
+const STORAGE_BUCKET = "wardrobe-photos";
+const STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024; // 1 GB free tier
+const MAX_PHOTO_WIDTH = 1200;
+const PHOTO_QUALITY = 0.85;
 const emptyItem = {name:"",type:"Tops",colour:"Black",season:"All Seasons",occasion:"Casual",size:"S",brand:"",notes:"",price:""};
 const CURRENCY = "$";
+
 const hashPin = (pin) => btoa(unescape(encodeURIComponent("wardrobe:" + pin))).split("").reverse().join("");
 const colourStyle = (c) => { const hex = COLOUR_HEX[c]; if (!hex) return {background:"#ccc"}; if (hex.includes("gradient")) return {backgroundImage: hex}; return {background: hex}; };
 const fmtPrice = (p) => CURRENCY + Number(p).toLocaleString("en-AU", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const fmtBytes = (b) => { if (!b) return "0 KB"; if (b < 1024) return b + " B"; if (b < 1024*1024) return (b/1024).toFixed(0) + " KB"; if (b < 1024*1024*1024) return (b/1024/1024).toFixed(1) + " MB"; return (b/1024/1024/1024).toFixed(2) + " GB"; };
 
-// ===== ConfigError: shown if Supabase isn't set up =====
+// Compress an image file to a JPEG blob, max width 1200px, quality 0.85
+async function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+        if (width > MAX_PHOTO_WIDTH) {
+          height = Math.round((height * MAX_PHOTO_WIDTH) / width);
+          width = MAX_PHOTO_WIDTH;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => blob ? resolve(blob) : reject(new Error("Compression failed")),
+          "image/jpeg",
+          PHOTO_QUALITY
+        );
+      };
+      img.onerror = () => reject(new Error("Could not read image. Try a JPG or PNG."));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error("Could not read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+// ===== ConfigError =====
 function ConfigError() {
   return (
     <div className="auth-bg">
@@ -104,12 +161,11 @@ function ConfigError() {
         <div className="info-msg" style={{textAlign:"left"}}>
           <strong>Set up Supabase first:</strong>
           <ol style={{marginTop:8,paddingLeft:20,lineHeight:1.8}}>
-            <li>Sign up free at <strong>supabase.com</strong></li>
+            <li>Sign up at <strong>supabase.com</strong></li>
             <li>Create a new project</li>
-            <li>SQL Editor → run the <code>supabase-setup.sql</code> script</li>
-            <li>Settings → API → copy the URL and anon key</li>
-            <li>Paste them at the top of <code>index.html</code></li>
-            <li>Push to GitHub</li>
+            <li>Run <code>supabase-setup.sql</code> in SQL Editor</li>
+            <li>Run <code>supabase-photos-migration.sql</code></li>
+            <li>Paste URL + anon key at the top of <code>index.html</code></li>
           </ol>
         </div>
       </div>
@@ -132,9 +188,7 @@ function AuthScreen() {
       if (mode === "signup") {
         const { data, error } = await sb.auth.signUp({ email, password });
         if (error) throw error;
-        if (!data.session) {
-          setInfo("Check your email for a confirmation link to complete signup.");
-        }
+        if (!data.session) setInfo("Check your email for a confirmation link.");
       } else {
         const { error } = await sb.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -148,7 +202,7 @@ function AuthScreen() {
       <div className="modal" style={{maxWidth:400}}>
         <div style={{textAlign:"center",marginBottom:24}}>
           <div style={{fontSize:50,marginBottom:8}}>✨</div>
-          <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",fontWeight:600,letterSpacing:"0.02em"}}>My Wardrobe</h1>
+          <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",fontWeight:600}}>My Wardrobe</h1>
           <p style={{fontSize:12,color:"#b08080",letterSpacing:"0.1em",textTransform:"uppercase",fontWeight:700,marginTop:4}}>{mode === "signup" ? "Create Account" : "Welcome Back"}</p>
         </div>
         <div style={{display:"grid",gap:14}}>
@@ -175,7 +229,7 @@ function AuthScreen() {
   );
 }
 
-// ===== Main Wardrobe App =====
+// ===== Wardrobe App =====
 function WardrobeApp({ session }) {
   const userId = session.user.id;
   const [profiles, setProfiles] = useState([]);
@@ -202,35 +256,49 @@ function WardrobeApp({ session }) {
   const [view, setView] = useState("grid");
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [totalStorageBytes, setTotalStorageBytes] = useState(0);
+  const [lightboxUrl, setLightboxUrl] = useState(null);
+  const [photoFile, setPhotoFile] = useState(null); // {blob, previewUrl, size}
+  const [photoError, setPhotoError] = useState("");
+  const [photoExisting, setPhotoExisting] = useState(null); // {url, path, size} for edited items
+  const [removePhotoFlag, setRemovePhotoFlag] = useState(false);
+  const fileInputRef = useRef(null);
 
-  // Load profiles on mount
+  // Load total storage usage across all of this user's items
+  const loadStorageUsage = async () => {
+    const { data } = await sb.from("wardrobe_items").select("photo_size").eq("user_id", userId);
+    if (data) {
+      const total = data.reduce((sum, i) => sum + (i.photo_size || 0), 0);
+      setTotalStorageBytes(total);
+    }
+  };
+
   useEffect(() => {
     (async () => {
       setLoading(true);
       const { data, error } = await sb.from("wardrobe_profiles").select("*").order("created_at", { ascending: true });
       if (!error && data) {
         setProfiles(data);
-        if (data.length === 0) {
-          setShowProfileSetup(true);
-        } else {
+        if (data.length === 0) { setShowProfileSetup(true); }
+        else {
           const lastActive = localStorage.getItem("wardrobe-active-profile");
           const profileToLoad = data.find(p => p.id === lastActive) || data[0];
           if (profileToLoad.pin_hash) setPinPrompt({profileId: profileToLoad.id});
           else setActiveProfileId(profileToLoad.id);
         }
       }
+      await loadStorageUsage();
       setLoading(false);
     })();
   }, [userId]);
 
-  // Load items when active profile changes
   useEffect(() => {
     if (!activeProfileId) return;
     (async () => {
       setItemsLoading(true);
       localStorage.setItem("wardrobe-active-profile", activeProfileId);
-      const { data, error } = await sb.from("wardrobe_items").select("*").eq("profile_id", activeProfileId).order("created_at", { ascending: false });
-      if (!error && data) setItems(data);
+      const { data } = await sb.from("wardrobe_items").select("*").eq("profile_id", activeProfileId).order("created_at", { ascending: false });
+      if (data) setItems(data);
       setItemsLoading(false);
     })();
   }, [activeProfileId]);
@@ -239,8 +307,7 @@ function WardrobeApp({ session }) {
     if (!newProfileName.trim()) return;
     setSaving(true);
     const { data, error } = await sb.from("wardrobe_profiles").insert({
-      user_id: userId,
-      name: newProfileName.trim(),
+      user_id: userId, name: newProfileName.trim(),
       pin_hash: newProfilePin ? hashPin(newProfilePin) : null
     }).select().single();
     if (!error && data) {
@@ -267,57 +334,142 @@ function WardrobeApp({ session }) {
   };
 
   const deleteProfile = async (profileId) => {
-    if (!confirm("Delete this profile and ALL its items? This cannot be undone.")) return;
-    const { error } = await sb.from("wardrobe_profiles").delete().eq("id", profileId);
-    if (!error) {
-      const updated = profiles.filter(p => p.id !== profileId);
-      setProfiles(updated);
-      if (activeProfileId === profileId) {
-        if (updated.length > 0) setActiveProfileId(updated[0].id);
-        else { setActiveProfileId(null); setItems([]); setShowProfileSetup(true); }
-      }
+    if (!confirm("Delete this profile and ALL its items (including photos)? This cannot be undone.")) return;
+    // Delete all photos in this profile from storage first
+    const { data: profileItems } = await sb.from("wardrobe_items").select("photo_path").eq("profile_id", profileId);
+    if (profileItems) {
+      const pathsToDelete = profileItems.filter(i => i.photo_path).map(i => i.photo_path);
+      if (pathsToDelete.length > 0) await sb.storage.from(STORAGE_BUCKET).remove(pathsToDelete);
     }
+    await sb.from("wardrobe_profiles").delete().eq("id", profileId);
+    const updated = profiles.filter(p => p.id !== profileId);
+    setProfiles(updated);
+    await loadStorageUsage();
+    if (activeProfileId === profileId) {
+      if (updated.length > 0) setActiveProfileId(updated[0].id);
+      else { setActiveProfileId(null); setItems([]); setShowProfileSetup(true); }
+    }
+  };
+
+  // Photo handling
+  const handlePhotoSelect = async (e) => {
+    setPhotoError("");
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setPhotoError("Please select an image file"); return; }
+    try {
+      const blob = await compressImage(file);
+      const previewUrl = URL.createObjectURL(blob);
+      setPhotoFile({ blob, previewUrl, size: blob.size });
+      setRemovePhotoFlag(false);
+    } catch (err) {
+      setPhotoError(err.message);
+    }
+    e.target.value = ""; // allow re-selecting same file
+  };
+
+  const clearPhotoSelection = () => {
+    if (photoFile?.previewUrl) URL.revokeObjectURL(photoFile.previewUrl);
+    setPhotoFile(null);
+    setPhotoError("");
+  };
+
+  const removeCurrentPhoto = () => {
+    clearPhotoSelection();
+    setRemovePhotoFlag(true);
+    setPhotoExisting(null);
   };
 
   const handleSubmit = async () => {
     if (!form.name.trim()) return;
     setSaving(true);
-    const payload = {
-      profile_id: activeProfileId,
-      user_id: userId,
-      name: form.name.trim(),
-      type: form.type,
-      colour: form.colour,
-      season: form.season,
-      occasion: form.occasion,
-      size: form.size,
-      brand: form.brand || null,
-      notes: form.notes || null,
-      price: form.price === "" ? null : parseFloat(form.price) || null
-    };
-    if (editingId) {
-      const { data, error } = await sb.from("wardrobe_items").update(payload).eq("id", editingId).select().single();
-      if (!error && data) setItems(items.map(i => i.id === editingId ? data : i));
-    } else {
-      const { data, error } = await sb.from("wardrobe_items").insert(payload).select().single();
-      if (!error && data) setItems([data, ...items]);
+    try {
+      let photoUrl = photoExisting?.url || null;
+      let photoPath = photoExisting?.path || null;
+      let photoSize = photoExisting?.size || null;
+
+      // Handle photo removal
+      if (removePhotoFlag && editingId) {
+        const original = items.find(i => i.id === editingId);
+        if (original?.photo_path) {
+          await sb.storage.from(STORAGE_BUCKET).remove([original.photo_path]);
+        }
+        photoUrl = null; photoPath = null; photoSize = null;
+      }
+
+      // Handle new photo upload
+      if (photoFile) {
+        // If replacing an existing photo, delete the old one first
+        if (editingId) {
+          const original = items.find(i => i.id === editingId);
+          if (original?.photo_path) {
+            await sb.storage.from(STORAGE_BUCKET).remove([original.photo_path]);
+          }
+        }
+        const fileName = `${Date.now()}_${Math.random().toString(36).slice(2,8)}.jpg`;
+        const path = `${userId}/${fileName}`;
+        const { error: upErr } = await sb.storage.from(STORAGE_BUCKET).upload(path, photoFile.blob, {
+          contentType: "image/jpeg", upsert: false
+        });
+        if (upErr) throw upErr;
+        const { data: urlData } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+        photoUrl = urlData.publicUrl;
+        photoPath = path;
+        photoSize = photoFile.size;
+      }
+
+      const payload = {
+        profile_id: activeProfileId, user_id: userId,
+        name: form.name.trim(), type: form.type, colour: form.colour,
+        season: form.season, occasion: form.occasion, size: form.size,
+        brand: form.brand || null, notes: form.notes || null,
+        price: form.price === "" ? null : parseFloat(form.price) || null,
+        photo_url: photoUrl, photo_path: photoPath, photo_size: photoSize
+      };
+
+      if (editingId) {
+        const { data } = await sb.from("wardrobe_items").update(payload).eq("id", editingId).select().single();
+        if (data) setItems(items.map(i => i.id === editingId ? data : i));
+      } else {
+        const { data } = await sb.from("wardrobe_items").insert(payload).select().single();
+        if (data) setItems([data, ...items]);
+      }
+
+      await loadStorageUsage();
+      closeForm();
+    } catch (err) {
+      setPhotoError("Save failed: " + err.message);
     }
-    setShowForm(false); setEditingId(null); setForm(emptyItem); setSaving(false);
+    setSaving(false);
+  };
+
+  const closeForm = () => {
+    clearPhotoSelection();
+    setShowForm(false); setEditingId(null); setForm(emptyItem);
+    setPhotoExisting(null); setRemovePhotoFlag(false); setPhotoError("");
   };
 
   const handleEdit = (item) => {
     setForm({...item, brand: item.brand || "", notes: item.notes || "", price: item.price != null ? String(item.price) : ""});
-    setEditingId(item.id); setShowForm(true);
+    setEditingId(item.id);
+    setPhotoExisting(item.photo_url ? {url: item.photo_url, path: item.photo_path, size: item.photo_size} : null);
+    setPhotoFile(null); setRemovePhotoFlag(false); setPhotoError("");
+    setShowForm(true);
   };
 
   const handleDelete = async (id) => {
-    const { error } = await sb.from("wardrobe_items").delete().eq("id", id);
-    if (!error) setItems(items.filter(i => i.id !== id));
+    const item = items.find(i => i.id === id);
+    if (item?.photo_path) {
+      await sb.storage.from(STORAGE_BUCKET).remove([item.photo_path]);
+    }
+    await sb.from("wardrobe_items").delete().eq("id", id);
+    setItems(items.filter(i => i.id !== id));
+    await loadStorageUsage();
     setDeleteConfirm(null);
   };
 
   const logout = async () => {
-    if (!confirm("Sign out? You'll need to log back in to see your wardrobe.")) return;
+    if (!confirm("Sign out?")) return;
     await sb.auth.signOut();
   };
 
@@ -335,6 +487,7 @@ function WardrobeApp({ session }) {
     if (sortBy === "colour") list.sort((a,b) => a.colour.localeCompare(b.colour));
     if (sortBy === "price-high") list.sort((a,b) => (b.price||0) - (a.price||0));
     if (sortBy === "price-low") list.sort((a,b) => (a.price||0) - (b.price||0));
+    if (sortBy === "photo-size") list.sort((a,b) => (b.photo_size||0) - (a.photo_size||0));
     return list;
   }, [items, filterType, filterColour, filterSeason, filterOccasion, search, sortBy]);
 
@@ -342,10 +495,10 @@ function WardrobeApp({ session }) {
   const totalValue = items.reduce((sum, i) => sum + (Number(i.price) || 0), 0);
   const itemsWithPrice = items.filter(i => Number(i.price) > 0).length;
   const activeProfile = profiles.find(p => p.id === activeProfileId);
+  const storagePercent = (totalStorageBytes / STORAGE_LIMIT_BYTES) * 100;
+  const storageColor = storagePercent > 90 ? "#dc2626" : storagePercent > 70 ? "#d97706" : "#16a34a";
 
-  if (loading) {
-    return <div className="auth-bg"><div style={{textAlign:"center",color:"#9e6b6b"}}><div className="spinner" style={{marginBottom:12}}/><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.2rem"}}>Loading your wardrobe…</div></div></div>;
-  }
+  if (loading) return <div className="auth-bg"><div style={{textAlign:"center",color:"#9e6b6b"}}><div className="spinner" style={{marginBottom:12}}/><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.2rem"}}>Loading your wardrobe…</div></div></div>;
 
   if (showProfileSetup) {
     return (
@@ -360,7 +513,6 @@ function WardrobeApp({ session }) {
             </div>
             <div><label className="label">PIN (optional, 4 digits)</label>
               <input type="password" inputMode="numeric" maxLength="4" value={newProfilePin} onChange={e=>setNewProfilePin(e.target.value.replace(/\D/g,""))} placeholder="Leave blank for no PIN" style={{width:"100%"}} />
-              <p style={{fontSize:11,color:"#b08080",marginTop:4,fontStyle:"italic"}}>A soft lock to keep profiles separate within your account.</p>
             </div>
           </div>
           <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:24}}>
@@ -413,6 +565,25 @@ function WardrobeApp({ session }) {
           <div style={{textAlign:"center",padding:"60px 20px",color:"#9e6b6b"}}><div className="spinner" style={{marginBottom:12}}/><div>Loading items…</div></div>
         ) : (
           <>
+            {/* Storage meter */}
+            {totalStorageBytes > 0 && (
+              <div className="storage-meter">
+                <div style={{display:"flex",alignItems:"center",gap:10,minWidth:0}}>
+                  <span style={{fontSize:20}}>📷</span>
+                  <div>
+                    <div style={{fontWeight:700,fontSize:13,color:"#3d2c2c"}}>{fmtBytes(totalStorageBytes)} <span style={{color:"#b08080",fontWeight:400,fontSize:11}}>of {fmtBytes(STORAGE_LIMIT_BYTES)}</span></div>
+                    <div style={{fontSize:10,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:700,marginTop:2}}>Photo Storage · {storagePercent.toFixed(1)}%</div>
+                  </div>
+                </div>
+                <div className="storage-bar">
+                  <div className="storage-fill" style={{width: Math.min(storagePercent, 100) + "%", background: storageColor}} />
+                </div>
+                {storagePercent > 70 && (
+                  <button className="btn-ghost" onClick={()=>setSortBy("photo-size")} style={{fontSize:11}}>Sort by Size to Clean Up</button>
+                )}
+              </div>
+            )}
+
             {(statsByType.length > 0 || totalValue > 0) && (
               <div className="stats-row">
                 {totalValue > 0 && (
@@ -442,6 +613,7 @@ function WardrobeApp({ session }) {
                 <option value="colour">Colour</option>
                 <option value="price-high">Price (High)</option>
                 <option value="price-low">Price (Low)</option>
+                <option value="photo-size">Photo Size (Large→Small)</option>
               </select>
               <div className="view-toggle">
                 {["grid","list"].map(v => (
@@ -491,26 +663,33 @@ function WardrobeApp({ session }) {
             {view === "grid" ? (
               <div className="grid">
                 {filtered.map(item => (
-                  <div key={item.id} className="card" onClick={()=>handleEdit(item)}>
-                    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
-                      <div style={{fontSize:28}}>{TYPE_ICONS[item.type]||"👚"}</div>
-                      <div className="colour-dot" style={colourStyle(item.colour)} />
+                  <div key={item.id} className="card">
+                    <div className="card-photo" onClick={()=>item.photo_url ? setLightboxUrl(item.photo_url) : handleEdit(item)}>
+                      {item.photo_url ? (
+                        <img src={item.photo_url} alt={item.name} loading="lazy" />
+                      ) : (
+                        <div className="card-photo-placeholder">{TYPE_ICONS[item.type]||"👚"}</div>
+                      )}
+                      <div className="colour-dot" style={{...colourStyle(item.colour),position:"absolute",top:10,right:10}} />
                     </div>
-                    <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:"1rem",margin:"0 0 4px",color:"#3d2c2c",lineHeight:1.3}}>{item.name}</h3>
-                    {item.brand && <p style={{margin:"0 0 4px",fontSize:11,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.brand}</p>}
-                    {Number(item.price) > 0 && <p className="price" style={{margin:"0 0 8px"}}>{fmtPrice(item.price)}</p>}
-                    <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6}}>
-                      <span className="pill">{item.type}</span>
-                      <span className="pill">{item.colour}</span>
-                    </div>
-                    <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-                      {item.size && <span className="pill">Size {item.size}</span>}
-                      {item.season !== "All Seasons" && <span className="pill">{item.season}</span>}
-                      {item.occasion && <span className="pill">{item.occasion}</span>}
-                    </div>
-                    {item.notes && <p style={{margin:"8px 0 0",fontSize:11,color:"#b08080",fontStyle:"italic",lineHeight:1.4}}>{item.notes}</p>}
-                    <div style={{display:"flex",justifyContent:"flex-end",marginTop:10}}>
-                      <button className="delete-btn" onClick={e=>{e.stopPropagation();setDeleteConfirm(item.id);}}>🗑</button>
+                    <div className="card-body" onClick={()=>handleEdit(item)}>
+                      <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:"1rem",margin:"0 0 4px",color:"#3d2c2c",lineHeight:1.3}}>{item.name}</h3>
+                      {item.brand && <p style={{margin:"0 0 4px",fontSize:11,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.brand}</p>}
+                      {Number(item.price) > 0 && <p className="price" style={{margin:"0 0 8px"}}>{fmtPrice(item.price)}</p>}
+                      <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6}}>
+                        <span className="pill">{item.type}</span>
+                        <span className="pill">{item.colour}</span>
+                      </div>
+                      <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                        {item.size && <span className="pill">Size {item.size}</span>}
+                        {item.season !== "All Seasons" && <span className="pill">{item.season}</span>}
+                        {item.occasion && <span className="pill">{item.occasion}</span>}
+                        {item.photo_size && <span className="pill pill-photo">📷 {fmtBytes(item.photo_size)}</span>}
+                      </div>
+                      {item.notes && <p style={{margin:"8px 0 0",fontSize:11,color:"#b08080",fontStyle:"italic",lineHeight:1.4}}>{item.notes}</p>}
+                      <div style={{display:"flex",justifyContent:"flex-end",marginTop:10}}>
+                        <button className="delete-btn" onClick={e=>{e.stopPropagation();setDeleteConfirm(item.id);}}>🗑</button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -519,13 +698,16 @@ function WardrobeApp({ session }) {
               <div>
                 {filtered.map(item => (
                   <div key={item.id} className="list-row" onClick={()=>handleEdit(item)}>
-                    <div style={{fontSize:22,flexShrink:0}}>{TYPE_ICONS[item.type]}</div>
+                    <div className="list-thumb" onClick={e=>{if(item.photo_url){e.stopPropagation();setLightboxUrl(item.photo_url);}}}>
+                      {item.photo_url ? <img src={item.photo_url} alt={item.name} loading="lazy" /> : TYPE_ICONS[item.type]}
+                    </div>
                     <div className="colour-dot" style={colourStyle(item.colour)} />
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}>
                         <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:"1rem"}}>{item.name}</span>
                         {item.brand && <span style={{fontSize:11,color:"#b08080",textTransform:"uppercase",letterSpacing:"0.08em"}}>{item.brand}</span>}
                         {Number(item.price) > 0 && <span className="pill pill-price">{fmtPrice(item.price)}</span>}
+                        {item.photo_size && <span className="pill pill-photo">📷 {fmtBytes(item.photo_size)}</span>}
                       </div>
                       <div style={{display:"flex",gap:4,marginTop:3,flexWrap:"wrap"}}>
                         <span className="pill">{item.type}</span>
@@ -545,11 +727,41 @@ function WardrobeApp({ session }) {
         )}
       </div>
 
+      {/* Item form modal */}
       {showForm && (
-        <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setShowForm(false)}>
+        <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&closeForm()}>
           <div className="modal">
             <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",fontWeight:600,margin:"0 0 20px",color:"#3d2c2c"}}>{editingId?"Edit Item":"Add New Item"}</h2>
-            <div style={{display:"grid",gap:12}}>
+            <div style={{display:"grid",gap:14}}>
+              {/* Photo upload section */}
+              <div>
+                <label className="label">Photo (optional)</label>
+                {photoFile ? (
+                  <div className="photo-preview">
+                    <img src={photoFile.previewUrl} alt="Preview" />
+                    <button className="photo-preview-remove" onClick={clearPhotoSelection} title="Remove">✕</button>
+                    <div style={{textAlign:"center",fontSize:11,color:"#b08080",marginTop:6}}>New photo · {fmtBytes(photoFile.size)} (compressed)</div>
+                  </div>
+                ) : photoExisting && !removePhotoFlag ? (
+                  <div className="photo-preview">
+                    <img src={photoExisting.url} alt="Current" />
+                    <button className="photo-preview-remove" onClick={removeCurrentPhoto} title="Remove">✕</button>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6,fontSize:11,color:"#b08080"}}>
+                      <span>Current · {fmtBytes(photoExisting.size)}</span>
+                      <button className="btn-link" onClick={()=>fileInputRef.current?.click()} style={{fontSize:11}}>Replace</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="photo-upload-area" onClick={()=>fileInputRef.current?.click()}>
+                    <div style={{fontSize:30,marginBottom:6,opacity:0.5}}>📷</div>
+                    <div style={{fontSize:13,color:"#9e6b6b",fontWeight:700}}>Tap to add photo</div>
+                    <div style={{fontSize:11,color:"#b08080",marginTop:4}}>JPG, PNG · Auto-compressed to ~200 KB</div>
+                  </div>
+                )}
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoSelect} style={{display:"none"}} />
+                {photoError && <div className="err-msg" style={{marginTop:8}}>{photoError}</div>}
+              </div>
+
               <div><label className="label">Item Name *</label>
                 <input type="text" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="e.g. Floral Summer Dress" style={{width:"100%"}} />
               </div>
@@ -574,7 +786,7 @@ function WardrobeApp({ session }) {
               </div>
             </div>
             <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}>
-              <button className="btn-ghost" onClick={()=>{setShowForm(false);setEditingId(null);}} disabled={saving}>Cancel</button>
+              <button className="btn-ghost" onClick={closeForm} disabled={saving}>Cancel</button>
               <button className="btn-primary" onClick={handleSubmit} disabled={!form.name.trim() || saving}>{saving ? <span className="spinner"/> : (editingId?"Save Changes":"Add to Wardrobe")}</button>
             </div>
           </div>
@@ -586,7 +798,7 @@ function WardrobeApp({ session }) {
           <div className="modal" style={{maxWidth:360,textAlign:"center"}}>
             <div style={{fontSize:40,marginBottom:12}}>🗑️</div>
             <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.3rem",margin:"0 0 8px"}}>Remove this item?</h3>
-            <p style={{color:"#b08080",fontSize:13,margin:"0 0 20px"}}>This can't be undone.</p>
+            <p style={{color:"#b08080",fontSize:13,margin:"0 0 20px"}}>{items.find(i=>i.id===deleteConfirm)?.photo_url ? "The photo will also be deleted from storage." : "This can't be undone."}</p>
             <div style={{display:"flex",gap:10,justifyContent:"center"}}>
               <button className="btn-ghost" onClick={()=>setDeleteConfirm(null)}>Cancel</button>
               <button className="btn-danger" onClick={()=>handleDelete(deleteConfirm)}>Remove</button>
@@ -621,21 +833,26 @@ function WardrobeApp({ session }) {
           </div>
         </div>
       )}
+
+      {/* Lightbox / photo viewer */}
+      {lightboxUrl && (
+        <div className="lightbox" onClick={()=>setLightboxUrl(null)}>
+          <button className="lightbox-close" onClick={()=>setLightboxUrl(null)}>✕</button>
+          <img src={lightboxUrl} alt="Full size" onClick={e=>e.stopPropagation()} />
+        </div>
+      )}
     </>
   );
 }
 
-// ===== Root App with auth state =====
 function App() {
   const [session, setSession] = useState(undefined);
-
   useEffect(() => {
     if (!sb) return;
     sb.auth.getSession().then(({data}) => setSession(data.session));
-    const {data: {subscription}} = sb.auth.onAuthStateChange((_event, sess) => setSession(sess));
+    const {data: {subscription}} = sb.auth.onAuthStateChange((_e, sess) => setSession(sess));
     return () => subscription.unsubscribe();
   }, []);
-
   if (!sb) return <ConfigError />;
   if (session === undefined) return <div className="auth-bg"><div className="spinner"/></div>;
   if (!session) return <AuthScreen />;
